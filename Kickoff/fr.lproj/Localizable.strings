@@ -1,0 +1,12 @@
+/* 
+  Localizable.strings
+  Kickoff
+
+  Created by Angela Lagache on 30/08/2025.
+  
+*/
+"tab.home" = "Accueil";
+"tab.sports" = "Sports";
+"tab.add" = "Ajouter";
+"tab.live" = "Direct";
+"tab.profile" = "Profil";
