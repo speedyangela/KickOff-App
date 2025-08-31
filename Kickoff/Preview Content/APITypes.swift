@@ -94,8 +94,10 @@ extension JSONDecoder {
 
 struct APIUserStats: Codable {
     var logsCount: Int
+    var reviewsCount: Int
     var badges: [String]
 }
+
 
 struct APIUser: Codable, Identifiable {
     let id: UUID

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct AddLogView: View {
+    @EnvironmentObject var auth: AuthManager
     @State private var sport: String = ""
     @State private var date: Date = Date()
     @State private var home: String = ""
@@ -68,12 +69,10 @@ struct AddLogView: View {
                 }
 
                 Section("Ta note") {
-                    Slider(value: $score, in: 0...10, step: 0.5)
-                        .tint(Color(hue: score / 10 * 0.33, saturation: 0.9, brightness: 0.9))
-
-                    Text(String(format: "Note: %.1f", score))
+                    ScoreGauge(value: $score)
                     TextField("Ton avis (optionnel)", text: $review, axis: .vertical)
                 }
+
 
                 Section {
                     Button { Task { await submit() } } label: {
@@ -118,6 +117,9 @@ struct AddLogView: View {
                 review: review.isEmpty ? nil : review
             )
             posted = true
+            await auth.registerLog(didWriteReview: !review.isEmpty)
+            await auth.refreshBadges()
+
         } catch {
             errorMessage = "Envoi impossible."
         }

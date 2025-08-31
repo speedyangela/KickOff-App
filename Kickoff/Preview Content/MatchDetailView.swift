@@ -7,7 +7,10 @@
 
 import SwiftUI
 
+
+
 struct MatchDetailView: View {
+    @EnvironmentObject var auth: AuthManager
     let matchId: Int
     var allowRating: Bool = false
 
@@ -91,6 +94,9 @@ struct MatchDetailView: View {
                 review: myReview.isEmpty ? nil : myReview
             )
             posted = true
+            await auth.registerLog(didWriteReview: !myReview.isEmpty)
+            await auth.refreshBadges()
+
             await load()
         } catch {
             errorMessage = "Envoi de la note impossible."

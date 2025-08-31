@@ -38,12 +38,17 @@ final class AuthManager: ObservableObject {
             username: username,
             email: email,
             bio: nil,
-            stats: .init(logsCount: 0, badges: [])
+            stats: .init(logsCount: 0, reviewsCount: 0, badges: []),
+            avatarPNGBase64: nil
         )
         try save(user: user)
         defaults.set(password, forKey: passwordKey) // mock only
         await MainActor.run { self.currentUser = user }
+
+        // ⬇️ Option 6 : calculer les badges dès la création
+        await refreshBadges()
     }
+
 
     func signIn(email: String, password: String) async throws {
         try await Task.sleep(nanoseconds: 150_000_000)
@@ -95,5 +100,23 @@ final class AuthManager: ObservableObject {
         try save(user: user)
         await MainActor.run { self.currentUser = user }
     }
+    /// À appeler après un log réussi
+    func registerLog(didWriteReview: Bool) async {
+        guard var user = currentUser else { return }
+        user.stats.logsCount += 1
+        if didWriteReview { user.stats.reviewsCount += 1 }
+        try? save(user: user)
+        await MainActor.run { self.currentUser = user }
+    }
+
+    /// Met à jour la liste des badges débloqués (côté mock)
+    func refreshBadges() async {
+        guard var user = currentUser else { return }
+        let unlocked = BadgeEngine.unlockedBadgeIDs(for: user.stats)
+        user.stats.badges = Array(unlocked)
+        try? save(user: user)
+        await MainActor.run { self.currentUser = user }
+    }
+
 
 }
