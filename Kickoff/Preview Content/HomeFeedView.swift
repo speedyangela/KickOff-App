@@ -20,7 +20,8 @@ struct HomeFeedView: View {
                 if !live.isEmpty {
                     Section("En direct") {
                         ForEach(live) { m in
-                            NavigationLink { MatchDetailView(matchId: m.id) } label: {
+                            // En direct
+                            NavigationLink { MatchDetailView(matchId: m.id, allowRating: true) } label: {
                                 MatchRow(match: m)
                             }
                         }
@@ -29,7 +30,7 @@ struct HomeFeedView: View {
                 if !trending.isEmpty {
                     Section("Tendance (dernières 72h)") {
                         ForEach(trending) { tm in
-                            NavigationLink { MatchDetailView(matchId: tm.id) } label: {
+                            NavigationLink { MatchDetailView(matchId: tm.id, allowRating: true) } label: {
                                 TrendingRow(match: tm)
                             }
                         }

@@ -10,6 +10,8 @@ import SwiftUI
 
 
 struct MatchDetailView: View {
+    @EnvironmentObject var reviews: ReviewsStore
+
     @EnvironmentObject var auth: AuthManager
     let matchId: Int
     var allowRating: Bool = false
@@ -93,6 +95,10 @@ struct MatchDetailView: View {
                 score: myScore,
                 review: myReview.isEmpty ? nil : myReview
             )
+            if let d = detail {
+                reviews.add(from: d, score: myScore, review: myReview)
+            }
+
             posted = true
             await auth.registerLog(didWriteReview: !myReview.isEmpty)
             await auth.refreshBadges()

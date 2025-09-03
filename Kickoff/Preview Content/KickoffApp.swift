@@ -49,6 +49,7 @@ struct KickoffApp: App {
                     }
             }
             .environmentObject(AuthManager.shared) // ⬅️ injection
+            .environmentObject(ReviewsStore.shared) 
         }
     }
 }

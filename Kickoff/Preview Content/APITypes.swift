@@ -109,3 +109,20 @@ struct APIUser: Codable, Identifiable {
     // Image d'avatar stockée localement (mock) en Base64 PNG
     var avatarPNGBase64: String? = nil
 }
+// ===== Review locale (mock) =====
+struct LocalReview: Codable, Identifiable {
+    let id: UUID
+    let createdAt: Date
+
+    // match
+    let matchId: Int
+    let sport: String
+    let competition: String?
+    let start_time: Date
+    let home: String?
+    let away: String?
+
+    // user rating
+    let score: Double
+    let review: String?
+}
