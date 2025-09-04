@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		04D1FB522E69C1A700FDE285 /* LaunchScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D1FB512E69C1A700FDE285 /* LaunchScreenView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		043761342E60BCF00091BDA2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		043761232E60BCEE0091BDA2 /* Kickoff.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kickoff.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		043761332E60BCF00091BDA2 /* KickoffTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KickoffTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0437613D2E60BCF00091BDA2 /* KickoffUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KickoffUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		04D1FB512E69C1A700FDE285 /* LaunchScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchScreenView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -88,6 +93,7 @@
 		0437611A2E60BCEE0091BDA2 = {
 			isa = PBXGroup;
 			children = (
+				04D1FB512E69C1A700FDE285 /* LaunchScreenView.swift */,
 				043761252E60BCEE0091BDA2 /* Kickoff */,
 				043761362E60BCF00091BDA2 /* KickoffTests */,
 				043761402E60BCF00091BDA2 /* KickoffUITests */,
@@ -251,6 +257,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04D1FB522E69C1A700FDE285 /* LaunchScreenView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -43,7 +43,7 @@ struct MyReviewsView: View {
     }
 }
 
-private struct ReviewRowView: View {
+struct ReviewRowView: View {
     let r: LocalReview
 
     var body: some View {

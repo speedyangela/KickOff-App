@@ -89,7 +89,6 @@ extension JSONDecoder {
     }
 }
 
-
 // ===== Utilisateur =====
 
 struct APIUserStats: Codable {
@@ -98,7 +97,6 @@ struct APIUserStats: Codable {
     var badges: [String]
 }
 
-
 struct APIUser: Codable, Identifiable {
     let id: UUID
     var username: String
@@ -106,10 +104,17 @@ struct APIUser: Codable, Identifiable {
     var bio: String?
     var stats: APIUserStats
 
-    // Image d'avatar stockée localement (mock) en Base64 PNG
+    // Nouveaux champs (mock)
+    var countryCode: String?        // ex: "FR"
+    var sportsWatched: [String]?    // ex: ["football","basketball","tennis"]
+    var favorites: [String]?        // ex: ["PSG","Messi","OL"] (max 5)
+
+    // Image d'avatar (mock)
     var avatarPNGBase64: String? = nil
 }
+
 // ===== Review locale (mock) =====
+
 struct LocalReview: Codable, Identifiable {
     let id: UUID
     let createdAt: Date

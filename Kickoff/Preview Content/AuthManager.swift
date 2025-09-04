@@ -39,16 +39,18 @@ final class AuthManager: ObservableObject {
             email: email,
             bio: nil,
             stats: .init(logsCount: 0, reviewsCount: 0, badges: []),
+            countryCode: nil,
+            sportsWatched: [],
+            favorites: [],
             avatarPNGBase64: nil
         )
         try save(user: user)
         defaults.set(password, forKey: passwordKey) // mock only
         await MainActor.run { self.currentUser = user }
 
-        // ⬇️ Option 6 : calculer les badges dès la création
+        // Calculer les badges dès la création
         await refreshBadges()
     }
-
 
     func signIn(email: String, password: String) async throws {
         try await Task.sleep(nanoseconds: 150_000_000)
@@ -76,6 +78,23 @@ final class AuthManager: ObservableObject {
         await MainActor.run { self.currentUser = user }
     }
 
+    func updateProfileInfo(countryCode: String?, sportsWatched: [String]) async throws {
+        try await Task.sleep(nanoseconds: 120_000_000)
+        guard var user = currentUser else { return }
+        user.countryCode = (countryCode?.isEmpty ?? true) ? nil : countryCode
+        user.sportsWatched = sportsWatched
+        try save(user: user)
+        await MainActor.run { self.currentUser = user }
+    }
+
+    func updateFavorites(_ favorites: [String]) async throws {
+        try await Task.sleep(nanoseconds: 120_000_000)
+        guard var user = currentUser else { return }
+        user.favorites = Array(favorites.prefix(5))
+        try save(user: user)
+        await MainActor.run { self.currentUser = user }
+    }
+
     func deleteAccount() async throws {
         try await Task.sleep(nanoseconds: 120_000_000)
         defaults.removeObject(forKey: userKey)
@@ -83,12 +102,6 @@ final class AuthManager: ObservableObject {
         await MainActor.run { self.currentUser = nil }
     }
 
-    // MARK: - Private
-
-    private func save(user: APIUser) throws {
-        let data = try JSONEncoder().encode(user)
-        defaults.set(data, forKey: userKey)
-    }
     func updateAvatar(_ data: Data?) async throws {
         try await Task.sleep(nanoseconds: 80_000_000)
         guard var user = currentUser else { return }
@@ -100,6 +113,7 @@ final class AuthManager: ObservableObject {
         try save(user: user)
         await MainActor.run { self.currentUser = user }
     }
+
     /// À appeler après un log réussi
     func registerLog(didWriteReview: Bool) async {
         guard var user = currentUser else { return }
@@ -118,5 +132,10 @@ final class AuthManager: ObservableObject {
         await MainActor.run { self.currentUser = user }
     }
 
+    // MARK: - Private
 
+    private func save(user: APIUser) throws {
+        let data = try JSONEncoder().encode(user)
+        defaults.set(data, forKey: userKey)
+    }
 }
