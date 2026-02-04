@@ -41,7 +41,7 @@ Le projet est conçu avec une architecture robuste pour garantir maintenabilité
     git clone [https://github.com/ton-username/KickOff-App.git](https://github.com/ton-username/KickOff-App.git)
     ```
 2.  Ouvrir le fichier `Kickoff.xcodeproj` dans **Xcode 16+**.
-3.  Sélectionner un simulateur (ex: iPhone 15 Pro) ou un appareil réel.
+3.  Sélectionner un simulateur ou un appareil réel.
 4.  Lancer le build avec `Cmd + R`.
 
 > **Note :** L'application est configurée par défaut en mode `.mock` dans `KickoffApp.swift`. Aucune connexion serveur n'est requise pour tester les fonctionnalités principales.
@@ -63,7 +63,7 @@ L'objectif est de supprimer la saisie manuelle des résultats pour passer à un 
 * **Connexion API Sportive** : Remplacement des `MockData` par une API réelle (ex: *API-Football* ou *TheSportsDB*) pour récupérer les scores, compositions et calendriers en temps réel.
 * **Auto-Logging** : Log automatique des matchs visionnés via validation géolocalisée ou check-in, au lieu de la sélection manuelle.
 
-#### 2. Data Science & IA (Objectif Master I2D) 🧠
+#### 2. Data Science & IA
 Exploitation des données générées par les utilisateurs :
 * **Moteur de Recommandation** : Algorithme (Collaborative Filtering) pour suggérer des matchs à voir en fonction de l'historique des notes de l'utilisateur.
 * **Analyse Prédictive** : Affichage de stats avancées dans la vue détail (ex: probabilité de victoire) basées sur des modèles historiques.
