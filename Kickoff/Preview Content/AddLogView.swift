@@ -1,176 +1,268 @@
 import SwiftUI
 
 struct AddLogView: View {
+    private enum SubmitState: Equatable {
+        case idle
+        case sending
+    }
+
     @EnvironmentObject var auth: AuthManager
     @EnvironmentObject var reviews: ReviewsStore
+    @Environment(\.dismiss) private var dismiss
 
-    @State private var success = false
+    @State private var showSuccessCelebration = false
+    @State private var successSymbolBounceTrigger = 0
 
-    // Form data
-    @State private var sport: String = ""
-    @State private var date: Date = Date()
-    @State private var teamA: String = ""
-    @State private var teamB: String = ""
+    @State private var searchQuery = ""
+    @State private var searchDebounceGeneration = 0
 
-    // Results
     @State private var results: [APIMatch] = []
     @State private var selectedMatch: APIMatch?
     @State private var isLoading = false
     @State private var errorMessage: String?
 
-    // Rating + review
     @State private var score: Double = 7.0
     @State private var review: String = ""
+    @State private var submitState: SubmitState = .idle
+
+    private var trimmedQuery: String {
+        searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var canSearch: Bool {
+        trimmedQuery.count >= 3
+    }
+
+    private var submitDisabled: Bool {
+        selectedMatch == nil || submitState == .sending
+    }
 
     var body: some View {
         NavigationView {
             Form {
-                // --- Infos du match ---
-                Section("Infos du match") {
-                    Picker("Sport", selection: $sport) {
-                        Text("—").tag("")
-                        Text("football").tag("football")
-                        Text("basketball").tag("basketball")
-                        Text("tennis").tag("tennis")
+                Section {
+                    TextField(LocalizedStringKey("addlog.search.placeholder"), text: $searchQuery)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } footer: {
+                    if !canSearch {
+                        Text(LocalizedStringKey("addlog.search.hint"))
+                            .font(.caption)
                     }
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
-
-                    // Équipes : 2 champs avec un "vs" au centre
-                    HStack(spacing: 10) {
-                        TextField("Équipe 1", text: $teamA)
-                            .textFieldStyle(.roundedBorder)
-                        Text("vs")
-                            .font(.subheadline).bold()
-                            .foregroundStyle(.secondary)
-                            .frame(minWidth: 24)
-                        TextField("Équipe 2", text: $teamB)
-                            .textFieldStyle(.roundedBorder)
-                    }
-                    .padding(.vertical, 4)
-
-                    // Bouton "Chercher le match" — centré & attractif
-                    HStack {
-                        Spacer()
-                        Button {
-                            Task { await search() }
-                        } label: {
-                            Label("Chercher le match", systemImage: "magnifyingglass")
-                                .font(.headline)
-                        }
-                        .buttonStyle(CapsuleButtonStyle(colors: [.orange, .pink]))
-                        .disabled(sport.isEmpty && teamA.isEmpty && teamB.isEmpty)
-                        Spacer()
-                    }
-                    .padding(.top, 6)
                 }
 
-                // --- Résultats (tap = sélection / re-tap = désélection) ---
-                if isLoading { ProgressView("Recherche…") }
-                if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
+                if isLoading && canSearch {
+                    Section {
+                        ProgressView()
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .listRowBackground(Color.clear)
+                }
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .foregroundStyle(.red)
+                    }
+                }
+
+                if canSearch, !isLoading, errorMessage == nil, results.isEmpty {
+                    Section {
+                        Text(LocalizedStringKey("addlog.search.empty"))
+                            .foregroundStyle(.secondary)
+                    }
+                }
 
                 if !results.isEmpty {
-                    Section("Résultats") {
+                    Section(LocalizedStringKey("addlog.search.results")) {
                         ForEach(results) { m in
                             Button {
-                                // Toggle sélection / désélection
                                 if selectedMatch?.id == m.id {
                                     selectedMatch = nil
                                 } else {
                                     selectedMatch = m
                                 }
                             } label: {
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text("\(m.home ?? "?") vs \(m.away ?? "?")").bold()
-                                        Text(m.competition ?? m.sport.capitalized)
-                                            .font(.caption).foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
-                                    if selectedMatch?.id == m.id {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(.green)
-                                    } else {
-                                        Image(systemName: "circle")
-                                            .foregroundStyle(.tertiary)
-                                    }
-                                }
+                                matchRow(m)
                             }
                         }
                     }
                 }
 
-                // --- Note ---
                 Section {
-                    ScoreGauge(value: $score) // jauge stylée déjà intégrée
+                    ScoreGauge(value: $score)
                 }
+                .disabled(selectedMatch == nil)
+                .opacity(selectedMatch == nil ? 0.45 : 1)
 
-                // --- Review séparée (qui donne envie) ---
-                Section("Ta review (optionnel)") {
-                    ReviewCard(text: $review, placeholder: "Raconte ton ressenti, les moments clés, l’ambiance…")
+                Section(LocalizedStringKey("addlog.review.section")) {
+                    ReviewCard(
+                        text: $review,
+                        placeholder: String(localized: .init("addlog.review.placeholder"))
+                    )
                 }
+                .disabled(selectedMatch == nil)
+                .opacity(selectedMatch == nil ? 0.45 : 1)
 
-                // --- Valider (centré & attractif) ---
                 Section {
                     HStack {
                         Spacer()
                         Button {
                             Task { await submit() }
                         } label: {
-                            Label("Valider mon log", systemImage: "paperplane.fill")
-                                .font(.headline)
+                            if submitState == .sending {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Label(String(localized: .init("addlog.submit")), systemImage: "paperplane.fill")
+                                    .font(.headline)
+                            }
                         }
                         .buttonStyle(CapsuleButtonStyle(colors: [.green, .teal]))
-                        .disabled(selectedMatch == nil)
+                        .disabled(submitDisabled)
                         Spacer()
                     }
                 }
             }
-            .navigationTitle("Ajouter un match")
-            .scrollDismissesKeyboard(.interactively)          // iOS 16+
+            .navigationTitle(LocalizedStringKey("addlog.title"))
+            .scrollDismissesKeyboard(.interactively)
+            .onChange(of: searchQuery) { _, _ in
+                scheduleDebouncedSearch()
+            }
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(LocalizedStringKey("addlog.close")) {
+                        dismiss()
+                    }
+                }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("Terminé") {
+                    Button(String(localized: .init("addlog.keyboard.done"))) {
                         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
                                                         to: nil, from: nil, for: nil)
                     }
                 }
             }
-
-            .alert("Merci !", isPresented: $success) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text("Ton log a été pris en compte.")
+            .overlay {
+                if showSuccessCelebration {
+                    successOverlay
+                        .transition(.opacity.combined(with: .scale(scale: 0.92)))
+                }
             }
         }
     }
 
-    // MARK: - Actions
+    @ViewBuilder
+    private func matchRow(_ m: APIMatch) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(m.home ?? "?") vs \(m.away ?? "?")")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.primary)
+                HStack(spacing: 6) {
+                    if let comp = m.competition {
+                        Text(comp)
+                    }
+                    Text("·")
+                        .foregroundStyle(.tertiary)
+                    Text(m.sport.capitalized)
+                        .foregroundStyle(.secondary)
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+            if selectedMatch?.id == m.id {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                    .imageScale(.large)
+            } else {
+                Image(systemName: "circle")
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var successOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.42)
+                .ignoresSafeArea()
+
+            VStack(spacing: 18) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 72))
+                    .foregroundStyle(.green, .white.opacity(0.95))
+                    .symbolEffect(.bounce, value: successSymbolBounceTrigger)
+
+                Text(LocalizedStringKey("addlog.success.title"))
+                    .font(.title2.weight(.bold))
+
+                Text(LocalizedStringKey("addlog.success.message"))
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(32)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(.background)
+                    .shadow(color: .black.opacity(0.2), radius: 24, x: 0, y: 12)
+            )
+            .padding(.horizontal, 36)
+        }
+    }
+
+    private func scheduleDebouncedSearch() {
+        searchDebounceGeneration += 1
+        let generation = searchDebounceGeneration
+
+        guard canSearch else {
+            results = []
+            isLoading = false
+            errorMessage = nil
+            selectedMatch = nil
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+
+        Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            await MainActor.run {
+                guard generation == searchDebounceGeneration else { return }
+                let q = trimmedQuery
+                guard q.count >= 3 else {
+                    isLoading = false
+                    return
+                }
+                Task { await performSearch(query: q) }
+            }
+        }
+    }
 
     @MainActor
-    private func search() async {
-        isLoading = true; errorMessage = nil
+    private func performSearch(query: String) async {
         defer { isLoading = false }
         do {
-            results = try await APIClient.shared.searchMatchesAdvanced(
-                sport: sport.isEmpty ? nil : sport,
-                date: date,
-                home: teamA.isEmpty ? nil : teamA,
-                away: teamB.isEmpty ? nil : teamB,
-                competition: nil
-            )
-            if results.isEmpty {
-                errorMessage = "Aucun match trouvé. Ajuste tes champs."
+            let found = try await APIClient.shared.searchMatches(query: query)
+            results = found
+            if let sel = selectedMatch, !found.contains(where: { $0.id == sel.id }) {
                 selectedMatch = nil
             }
         } catch {
-            errorMessage = "Recherche impossible."
+            errorMessage = String(localized: .init("addlog.search.error"))
+            results = []
+            selectedMatch = nil
         }
     }
 
     @MainActor
     private func submit() async {
         guard let m = selectedMatch else { return }
+        submitState = .sending
+        defer { submitState = .idle }
         do {
             try await APIClient.shared.postRating(
                 matchId: m.id,
@@ -178,16 +270,19 @@ struct AddLogView: View {
                 review: review.isEmpty ? nil : review
             )
 
-            // Enregistre localement + stats/badges
             reviews.add(from: m, score: score, review: review)
             await auth.registerLog(didWriteReview: !review.isEmpty)
             await auth.refreshBadges()
 
-            // Feedback
-            success = true
+            successSymbolBounceTrigger += 1
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.78)) {
+                showSuccessCelebration = true
+            }
+            try? await Task.sleep(for: .milliseconds(1_100))
+            dismiss()
 
         } catch {
-            errorMessage = "Envoi impossible."
+            errorMessage = String(localized: .init("addlog.submit.error"))
         }
     }
 }
@@ -195,7 +290,7 @@ struct AddLogView: View {
 // MARK: - UI Helpers
 
 private struct CapsuleButtonStyle: ButtonStyle {
-    var colors: [Color]   // on passe juste les couleurs
+    var colors: [Color]
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -231,7 +326,7 @@ private struct ReviewCard: View {
             TextEditor(text: $text)
                 .padding(12)
                 .frame(minHeight: 120)
-                .opacity(0.99) // corrige un bug d’affichage
+                .opacity(0.99)
                 .background(Color.clear)
                 .overlay(alignment: .topLeading) {
                     if text.isEmpty {
@@ -244,5 +339,3 @@ private struct ReviewCard: View {
         .padding(.vertical, 4)
     }
 }
-
-

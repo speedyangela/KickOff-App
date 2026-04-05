@@ -10,3 +10,28 @@
 "tab.add" = "Ajouter";
 "tab.live" = "Direct";
 "tab.profile" = "Profil";
+
+"addlog.close" = "Fermer";
+"addlog.success.title" = "Merci !";
+"addlog.success.message" = "Ton log a été pris en compte.";
+
+"addlog.title" = "Ajouter un match";
+"addlog.search.placeholder" = "Rechercher une équipe, une compétition…";
+"addlog.search.hint" = "Saisis au moins 3 lettres pour voir les matchs officiels.";
+"addlog.search.results" = "Matchs suggérés";
+"addlog.search.empty" = "Aucun match ne correspond. Essaie un autre mot-clé.";
+"addlog.search.error" = "Recherche impossible.";
+"addlog.review.section" = "Ta review (optionnel)";
+"addlog.review.placeholder" = "Raconte ton ressenti, les moments clés, l’ambiance…";
+"addlog.submit" = "Valider mon log";
+"addlog.keyboard.done" = "Terminé";
+"addlog.submit.error" = "Envoi impossible.";
+
+"scoregauge.title" = "Ta note";
+
+"hashtag.empty.title" = "Aucun avis";
+"hashtag.empty.message" = "Aucune review ne contient encore #%@.";
+
+"myreviews.empty.title" = "Aucune review pour l’instant";
+"myreviews.empty.hint" = "Ajoute un log depuis le bouton « + » au centre.";
+"myreviews.replies.format" = "%d réponses";

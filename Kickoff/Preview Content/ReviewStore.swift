@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Foundation
 import SwiftUI
 
 final class ReviewsStore: ObservableObject {
@@ -25,8 +24,6 @@ final class ReviewsStore: ObservableObject {
 
     func add(from match: APIMatch, score: Double, review: String?) {
         let item = LocalReview(
-            id: UUID(),
-            createdAt: Date(),
             matchId: match.id,
             sport: match.sport,
             competition: match.competition,
@@ -42,8 +39,6 @@ final class ReviewsStore: ObservableObject {
 
     func add(from detail: APIMatchDetail, score: Double, review: String?) {
         let item = LocalReview(
-            id: UUID(),
-            createdAt: Date(),
             matchId: detail.id,
             sport: detail.sport,
             competition: detail.competition,
@@ -54,6 +49,26 @@ final class ReviewsStore: ObservableObject {
             review: (review?.isEmpty ?? true) ? nil : review
         )
         items.insert(item, at: 0)
+        save()
+    }
+
+    func reviews(matchingHashtag rawTag: String) -> [LocalReview] {
+        let tag = rawTag.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !tag.isEmpty else { return [] }
+        return items.filter { $0.hashtags.contains(tag) }
+            .sorted { $0.createdAt > $1.createdAt }
+    }
+
+    /// Préparation débats : ajoute une réponse locale sous une review.
+    func addReply(to reviewId: UUID, authorUsername: String?, body: String) {
+        let trimmed = body.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty,
+              let i = items.firstIndex(where: { $0.id == reviewId })
+        else { return }
+        var r = items[i]
+        let reply = ReviewReply(id: UUID(), createdAt: Date(), authorUsername: authorUsername, body: trimmed)
+        r.replies.append(reply)
+        items[i] = r
         save()
     }
 

@@ -15,12 +15,11 @@ struct HomeFeedView: View {
     @State private var showError = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 if !live.isEmpty {
                     Section("En direct") {
                         ForEach(live) { m in
-                            // En direct
                             NavigationLink { MatchDetailView(matchId: m.id, allowRating: true) } label: {
                                 MatchRow(match: m)
                             }
@@ -37,7 +36,10 @@ struct HomeFeedView: View {
                     }
                 }
             }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
             .navigationTitle("Accueil")
+            .toolbarBackground(Color(.systemGroupedBackground), for: .navigationBar)
             .overlay { if isLoading { ProgressView("Chargement…") } }
             .task { await load() }
             .refreshable { await load() }
@@ -47,6 +49,8 @@ struct HomeFeedView: View {
                 Text(errorMessage ?? "Une erreur inconnue est survenue.")
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemGroupedBackground))
     }
 
     @MainActor

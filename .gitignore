@@ -1,0 +1,41 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcresult
+
+# SwiftPM
+.build/
+Packages/
+Package.resolved
+
+# CocoaPods (si tu l’utilises plus tard)
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Éditeurs / outils locaux
+.cursor/
+*.swp
+*~
+
+# Archives / backups locaux (hors repo)
+*.zip

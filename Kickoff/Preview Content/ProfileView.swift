@@ -103,12 +103,18 @@ private enum ProfileTab: CaseIterable { case profile, badges, reviews
 
 // MARK: - Profile tab content
 
+private struct HashtagSheetItem: Identifiable, Hashable {
+    let tag: String
+    var id: String { tag }
+}
+
 private struct ProfileTabView: View {
     @EnvironmentObject var auth: AuthManager
     @EnvironmentObject var reviews: ReviewsStore
 
     let user: APIUser
     @State private var avatarItem: PhotosPickerItem? = nil
+    @State private var hashtagSheetItem: HashtagSheetItem?
 
     var body: some View {
         ScrollView {
@@ -149,9 +155,17 @@ private struct ProfileTabView: View {
                 FavoritesCard()
 
                 // 5) Recent activity
-                RecentActivitySection(items: reviews.items)
+                RecentActivitySection(items: reviews.items) { tag in
+                    hashtagSheetItem = HashtagSheetItem(tag: tag)
+                }
             }
             .padding(.bottom, 24)
+        }
+        .sheet(item: $hashtagSheetItem) { item in
+            NavigationStack {
+                HashtagReviewsListView(tag: item.tag, isPresentedInSheet: true)
+                    .environmentObject(reviews)
+            }
         }
     }
 }
@@ -386,6 +400,7 @@ private struct FavoritesEditSheet: View {
 
 private struct RecentActivitySection: View {
     let items: [LocalReview]
+    var onHashtagTap: ((String) -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -401,9 +416,13 @@ private struct RecentActivitySection: View {
             } else {
                 VStack(spacing: 0) {
                     ForEach(items.sorted(by: { $0.createdAt > $1.createdAt }).prefix(10)) { r in
-                        ReviewRowView(r: r)
-                            .padding(.horizontal)
-                            .padding(.vertical, 10)
+                        ReviewRowView(
+                            r: r,
+                            enableHashtagLinks: onHashtagTap != nil,
+                            onHashtagTap: onHashtagTap
+                        )
+                        .padding(.horizontal)
+                        .padding(.vertical, 10)
                         Divider()
                     }
                 }

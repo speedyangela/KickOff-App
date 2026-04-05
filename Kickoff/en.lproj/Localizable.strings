@@ -10,3 +10,28 @@
 "tab.add" = "Add";
 "tab.live" = "Live";
 "tab.profile" = "Profile";
+
+"addlog.close" = "Close";
+"addlog.success.title" = "Thanks!";
+"addlog.success.message" = "Your log was saved.";
+
+"addlog.title" = "Add a match";
+"addlog.search.placeholder" = "Search a team, a competition…";
+"addlog.search.hint" = "Type at least 3 letters to see official fixtures.";
+"addlog.search.results" = "Suggested matches";
+"addlog.search.empty" = "No matches found. Try another keyword.";
+"addlog.search.error" = "Search failed.";
+"addlog.review.section" = "Your review (optional)";
+"addlog.review.placeholder" = "How was it? Key moments, atmosphere…";
+"addlog.submit" = "Save log";
+"addlog.keyboard.done" = "Done";
+"addlog.submit.error" = "Couldn’t save your log.";
+
+"scoregauge.title" = "Your score";
+
+"hashtag.empty.title" = "No reviews";
+"hashtag.empty.message" = "No reviews contain #%@ yet.";
+
+"myreviews.empty.title" = "No reviews yet";
+"myreviews.empty.hint" = "Add a log using the center « + » button.";
+"myreviews.replies.format" = "%d replies";

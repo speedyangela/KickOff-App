@@ -152,11 +152,14 @@ private enum Mock {
 
     static func searchMatches(query: String) async throws -> [APIMatch] {
         try await Task.sleep(nanoseconds: 150_000_000)
-        let q = query.lowercased()
-        return MockData.matches.filter {
-            ($0.home ?? "").lowercased().contains(q) ||
-            ($0.away ?? "").lowercased().contains(q) ||
-            ($0.competition ?? "").lowercased().contains(q)
+        let q = query.folding(options: .diacriticInsensitive, locale: .current).lowercased()
+        guard q.count >= 3 else { return [] }
+        return MockData.matches.filter { m in
+            let sport = m.sport.folding(options: .diacriticInsensitive, locale: .current).lowercased()
+            let home = (m.home ?? "").folding(options: .diacriticInsensitive, locale: .current).lowercased()
+            let away = (m.away ?? "").folding(options: .diacriticInsensitive, locale: .current).lowercased()
+            let comp = (m.competition ?? "").folding(options: .diacriticInsensitive, locale: .current).lowercased()
+            return sport.contains(q) || home.contains(q) || away.contains(q) || comp.contains(q)
         }
     }
 
